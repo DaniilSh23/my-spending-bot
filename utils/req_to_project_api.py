@@ -1,58 +1,46 @@
 from typing import Tuple
-
 import aiohttp
+from settings.config import START_BOT_URL, MY_LOGGER, TOKEN, GET_SETTINGS_URL
 
-from settings.config import CHECK_USER_URL, MY_LOGGER, TOKEN, GET_SETTINGS_URL
 
-
-async def check_user_id(tlg_id, tlg_username):
+async def start_bot_post_request(tlg_id, tlg_username, telephone, first_name, last_name, language_code):
     """
-    POST запрос для проверки пользователя в системе.
-
-    Принимает параметры:
-        token - TOKEN бота, необходим для идентификации оригинального запроса
-        tlg_id - ID пользователя в телеграме
-        tlg_username - username пользователя в телеграме
-
-    Значения статус кодов:
-        200 - юзер найден в системе,
-        201 - юзер новый и был создан в системе,
-        400 - неверный запрос, стоит также проверить параметры запроса
-
-    Возвращает (пример):
-        status_code 201 - {"created": True, "trial_days": 5}
-        status_code 200 - {"created": False, "trial_days": 5}
-        status_code 400 - {"result": "description of errors"}
+    POST запрос при старте бота.
     """
     async with aiohttp.ClientSession() as session:
         data = {
-            'token': TOKEN,
             'tlg_id': int(tlg_id),
             'tlg_username': tlg_username,
+            'telephone': telephone,
+            'first_name': first_name,
+            'last_name': last_name,
+            'language_code': language_code,
+            'api_token': TOKEN,
         }
-        async with session.post(url=CHECK_USER_URL, data=data) as response:
+        async with session.post(url=START_BOT_URL, data=data) as response:
             if response.status == 200:
-                MY_LOGGER.success(f'Успешный POST запрос. Юзер с tlg_id == {tlg_id} НАЙДЕН в системе. Код 200')
-                return 200, await response.json()
-            elif response.status == 201:
-                MY_LOGGER.success(f'Успешный POST запрос. Юзер с tlg_id == {tlg_id} СОЗДАН в системе. Код 201')
-                return 201, await response.json()
+                MY_LOGGER.success(f'Успешный POST запрос при старте бота')
+                return 200
             elif response.status == 400:
-                MY_LOGGER.warning(f'Неудачный запрос для проверки юзера с tlg_id == {tlg_id}. Код 400')
-                return 400, await response.json()
+                MY_LOGGER.warning(f'Неудачный запрос при старте бота. Код 400')
+                return 400
             else:
                 MY_LOGGER.warning(f'Вообще хз, что тут произошло ещё.')
-                return response.status, {'result': 'unexpected error'}
+                return response.status
 
 
 async def get_settings(setting_key: str) -> Tuple[int, dict]:
     """
-    GET запрос для получения какой-либо настройки из БД
+    POST запрос для получения какой-либо настройки из БД
     :param setting_key: str - ключ настройки
     :return: str
     """
+    data = {
+        "key": setting_key,
+        "api_token": TOKEN,
+    }
     async with aiohttp.ClientSession() as session:
-        async with session.get(url=f"{GET_SETTINGS_URL}?key={setting_key}") as response:
+        async with session.post(url=f"{GET_SETTINGS_URL}", data=data) as response:
             if response.status == 200:
                 MY_LOGGER.success(f'Успешный GET запрос для получения настроек по ключу {setting_key!r}')
             else:

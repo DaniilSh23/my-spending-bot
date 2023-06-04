@@ -17,13 +17,9 @@ ADMIN_PASS = os.environ.get('ADMIN_PASS', 'admin')
 
 # Константы для API Django проекта
 BASE_HOST_URL = os.environ.get('BASE_HOST_URL', 'http://127.0.0.1:8000/')
-CHECK_USER_URL = f'{BASE_HOST_URL}/first_word/check_user/'
-GET_SETTINGS_URL = f'{BASE_HOST_URL}/first_word/get_settings/'
+START_BOT_URL = f'{BASE_HOST_URL}/myspending/start_bot/'
+GET_SETTINGS_URL = f'{BASE_HOST_URL}/myspending/get_settings/'
 
 # TODO: пока на этом заглушка, потому что телега не может найти url адреса
 # STATISTIC_LINK = f'{BASE_HOST_URL}/first_word/statistic/'
-# SUBSCRIPTION_LINK = f'{BASE_HOST_URL}/first_word/subscription/'
-# SUPPORT_LINK = f'{BASE_HOST_URL}/first_word/support/'
-STATISTIC_LINK = 'https://yandex.ru'
-SUBSCRIPTION_LINK = 'https://yandex.ru'
-SUPPORT_LINK = 'https://yandex.ru'
+WRITE_SPENDING_LINK = 'https://yandex.ru'
