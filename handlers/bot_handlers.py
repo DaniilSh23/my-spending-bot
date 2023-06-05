@@ -46,7 +46,7 @@ async def start_handler(client: pyrogram.Client, update: Message):
 
     # Отправляем клавиатуру главного меню
     await update.reply_text(
-        text=f'👇 Жми на кнопку ниже, чтобы внести сумму трат',
+        text=f'👇 Жми на кнопку ниже, чтобы <b>внести сумму трат</b>',
         reply_markup=WRITE_SPENDING_KBRD,
     )
 
