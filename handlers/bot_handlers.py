@@ -6,6 +6,7 @@ import pytz
 from pyrogram import Client, filters
 from pyrogram.types import Message, CallbackQuery
 
+from filters.bot_filters import get_day_pending_filter
 from keyboards.bot_keyboards import ADMIN_KBRD, HEADPAGE_RBRD
 from settings.config import MY_LOGGER, ADMIN_LOGIN, ADMIN_PASS
 from utils.req_to_project_api import start_bot_post_request, get_settings, get_day_spending
@@ -62,7 +63,7 @@ async def start_handler(client: pyrogram.Client, update: Message):
         )
 
 
-@Client.on_callback_query()
+@Client.on_callback_query(get_day_pending_filter)
 async def get_day_spending_handler(client: pyrogram.Client, update: CallbackQuery):
     """
     Хэндлер для обработки нажатия кнопки получения расходов за день.
