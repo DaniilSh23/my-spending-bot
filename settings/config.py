@@ -11,7 +11,6 @@ load_dotenv()
 TOKEN = os.environ.get('TOKEN', '5265303938:AAE1daGp-VJR0R15J9tHksR38hQlbCXMYdU')
 API_ID = os.environ.get('API_ID', '1234567890')
 API_HASH = os.environ.get('API_HASH', 'какой-то там хэш')
-FORM_LINK = os.environ.get('FORM_LINK', 'https://f5cc-78-30-211-223.ngrok-free.app/service_desk_bot/fill_an_app/')
 ADMIN_LOGIN = os.environ.get('ADMIN_LOGIN', 'admin')
 ADMIN_PASS = os.environ.get('ADMIN_PASS', 'admin')
 
@@ -19,7 +18,11 @@ ADMIN_PASS = os.environ.get('ADMIN_PASS', 'admin')
 BASE_HOST_URL = os.environ.get('BASE_HOST_URL', 'http://127.0.0.1:8000/')
 START_BOT_URL = f'{BASE_HOST_URL}myspending/start_bot/'
 GET_SETTINGS_URL = f'{BASE_HOST_URL}myspending/get_settings/'
+GET_DAY_SPENDING_URL = f'{BASE_HOST_URL}myspending/get_day_spending/'
 
-# TODO: пока на этом заглушка, потому что телега не может найти url адреса
-# WRITE_SPENDING_LINK = 'https://yandex.ru'
-WRITE_SPENDING_LINK = f'{BASE_HOST_URL}myspending/write_spending/'
+BOT_DEBUG = os.environ.get('BOT_DEBUG', False)
+
+if BOT_DEBUG:
+    WRITE_SPENDING_LINK = 'https://yandex.ru'
+else:
+    WRITE_SPENDING_LINK = f'{BASE_HOST_URL}myspending/write_spending/'

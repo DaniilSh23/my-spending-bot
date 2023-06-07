@@ -8,9 +8,12 @@ ADMIN_KBRD = InlineKeyboardMarkup([
         BUTTONS_DCT['ADMIN_PANEL']
     ],
 ])
-WRITE_SPENDING_KBRD = InlineKeyboardMarkup([
+HEADPAGE_RBRD = InlineKeyboardMarkup([
     [
-        BUTTONS_DCT['WRITE_SPENDING']
+        BUTTONS_DCT['WRITE_SPENDING'],
+    ],
+    [
+        BUTTONS_DCT['DAY_SPENDING'],
     ],
 ])
 

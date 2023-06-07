@@ -11,4 +11,8 @@ BUTTONS_DCT = {
         text=f'🖋 Записать расходы',
         web_app=WebAppInfo(url=WRITE_SPENDING_LINK)
     ),
+    'DAY_SPENDING': InlineKeyboardButton(
+        text=f'💸 Траты за день',
+        callback_data='get_day_spending'
+    ),
 }
