@@ -20,9 +20,9 @@ START_BOT_URL = f'{BASE_HOST_URL}myspending/start_bot/'
 GET_SETTINGS_URL = f'{BASE_HOST_URL}myspending/get_settings/'
 GET_DAY_SPENDING_URL = f'{BASE_HOST_URL}myspending/get_day_spending/'
 
-BOT_DEBUG = os.environ.get('BOT_DEBUG', False)
+BOT_DEBUG = os.environ.get('BOT_DEBUG', '0')
 
-if BOT_DEBUG:
-    WRITE_SPENDING_LINK = 'https://yandex.ru'
+if BOT_DEBUG == '1':
+    WRITE_SPENDING_LINK = 'https://1591925-cz63584.twc1.net/myspending/write_spending/'
 else:
     WRITE_SPENDING_LINK = f'{BASE_HOST_URL}myspending/write_spending/'
