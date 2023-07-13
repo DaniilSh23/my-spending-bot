@@ -15,4 +15,8 @@ BUTTONS_DCT = {
         text=f'💸 Траты за день',
         callback_data='get_day_spending'
     ),
+    'THIS_MONTH_SPENDING': InlineKeyboardButton(
+        text=f'📅 Расходы за текущий месяц',
+        callback_data='this_month_spending'
+    ),
 }

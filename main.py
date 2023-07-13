@@ -17,6 +17,7 @@ if __name__ == '__main__':
 
     try:
         Client("test_bot", plugins=plugins).run()
+        # Client("work_bot", plugins=plugins).run()
 
     except Exception as error:
         logger.error(f'BOT CRASHED WITH SOME ERROR\n\t{error}')
