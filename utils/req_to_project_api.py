@@ -1,6 +1,7 @@
 from typing import Tuple
 import aiohttp
-from settings.config import START_BOT_URL, MY_LOGGER, TOKEN, GET_SETTINGS_URL, GET_DAY_SPENDING_URL
+from settings.config import START_BOT_URL, MY_LOGGER, TOKEN, GET_SETTINGS_URL, GET_DAY_SPENDING_URL, \
+    GET_MONTH_SPENDING_URL
 
 
 async def start_bot_post_request(tlg_id, tlg_username, first_name, last_name, language_code):
@@ -59,4 +60,19 @@ async def get_day_spending(tlg_id: str) -> Tuple[int, dict]:
                 MY_LOGGER.success(f'Успешный GET запрос для получения трат за день юзера {tlg_id!r}')
             else:
                 MY_LOGGER.warning(f'Неудачный GET запрос для получения трат за день юзера {tlg_id!r}')
+            return response.status, await response.json()
+
+
+async def get_month_spending(tlg_id: str) -> Tuple[int, dict]:
+    """
+    GET запрос для получения трат за текущий месяц
+    :param tlg_id: TG ID юзера
+    :return: (int, dict) - (статус код, данные)
+    """
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url=f'{GET_MONTH_SPENDING_URL}?tlg_id={tlg_id}') as response:
+            if response.status == 200:
+                MY_LOGGER.success(f'Успешный GET запрос для получения трат за месяц юзера {tlg_id!r}')
+            else:
+                MY_LOGGER.warning(f'Неудачный GET запрос для получения трат за месяц юзера {tlg_id!r}')
             return response.status, await response.json()

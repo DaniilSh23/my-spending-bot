@@ -1,15 +1,20 @@
+import calendar
+import csv
 import datetime
+import os
 from _decimal import Decimal
 
+import aiofiles
 import pyrogram
 import pytz
 from pyrogram import Client, filters
 from pyrogram.types import Message, CallbackQuery
 
-from filters.bot_filters import get_day_pending_filter
-from keyboards.bot_keyboards import ADMIN_KBRD, HEADPAGE_RBRD
-from settings.config import MY_LOGGER, ADMIN_LOGIN, ADMIN_PASS
-from utils.req_to_project_api import start_bot_post_request, get_settings, get_day_spending
+from filters.bot_filters import get_day_pending_filter, get_month_spending_filter, filter_back_to_headpage, \
+    filter_make_month_file
+from keyboards.bot_keyboards import ADMIN_KBRD, HEADPAGE_RBRD, MAKE_MONTH_FILE_KBRD, BACK_TO_HEADPAGE_KBRD
+from settings.config import MY_LOGGER, ADMIN_LOGIN, ADMIN_PASS, MONTH_SPENDING_DATA
+from utils.req_to_project_api import start_bot_post_request, get_settings, get_day_spending, get_month_spending
 
 
 @Client.on_message(filters.command('start'))
@@ -69,6 +74,7 @@ async def get_day_spending_handler(client: pyrogram.Client, update: CallbackQuer
     Хэндлер для обработки нажатия кнопки получения расходов за день.
     """
     MY_LOGGER.debug(f'Апдейт в хэндлере получения расходов за день от пользователя {update.from_user.id}')
+    await update.answer(f'Расходы за день')
     resp_status, resp_data = await get_day_spending(tlg_id=str(update.from_user.id))
 
     if resp_status != 200:
@@ -102,6 +108,122 @@ async def get_day_spending_handler(client: pyrogram.Client, update: CallbackQuer
     MY_LOGGER.debug(f'Изменяем сообщение в телеге, вставляя в него текст трат за сегодня')
     await update.edit_message_text(
         text=msg_txt,
+        reply_markup=HEADPAGE_RBRD,
+    )
+
+
+@Client.on_callback_query(get_month_spending_filter)
+async def this_month_spending(client: pyrogram.Client, update: CallbackQuery):
+    """
+    Хэндлер для нажатия на кнопку расходов за текущий месяц
+    """
+    MY_LOGGER.debug(f'Апдейт в хэндлере получения расходов за тек.месяц от пользователя {update.from_user.id}')
+    await update.answer(f'Расходы за текущий месяц')
+    resp_status, resp_data = await get_month_spending(tlg_id=str(update.from_user.id))
+
+    if resp_status != 200:
+        MY_LOGGER.debug(f'Статус-код ответа на запрос о получении расходов за месяц == {resp_status}')
+        await update.edit_message_text(
+            text=f'🚧 Неудачный запрос для получения трат за месяц.\n🛠 У бота что-то сломалось, надо чинить.',
+            reply_markup=HEADPAGE_RBRD,
+        )
+        return
+
+    MY_LOGGER.debug(f'Выполняем подсчёт трат и подготовку данных для записи в файл.')
+    # file_headers = ','.join([i_key for i_key in resp_data[0].keys()])   # Заголовки файла
+    file_headers = [i_key for i_key in resp_data[0].keys()]   # Заголовки файла
+    file_rows = []
+    spend_stat = dict()
+    spend_total = 0
+    for i_spend in resp_data:
+
+        # Собираем строку файла
+        i_row = []
+        for i_val in i_spend.values():
+            try:
+                dt = datetime.datetime.strptime(i_val, "%Y-%m-%dT%H:%M:%S.%f%z")
+                i_val = dt.strftime('%d.%m.%Y %H:%M')
+            except ValueError:
+                pass
+            i_row.append(i_val)
+        file_rows.append(i_row)
+
+        # Считаем суммы трат
+        categ_name = i_spend.get("category")
+        if spend_stat.get(categ_name):
+            spend_stat[i_spend.get("category")] += float(i_spend.get("amount"))
+        else:
+            spend_stat[i_spend.get("category")] = float(i_spend.get("amount"))
+        spend_total += float(i_spend.get("amount"))
+    spend_average_per_day = spend_total / calendar.monthrange(datetime.datetime.now().year,
+                                                              datetime.datetime.now().month)[1]
+    MONTH_SPENDING_DATA[update.from_user.id] = (file_headers, file_rows)    # Данные о тратах за месяц для файла
+
+    MY_LOGGER.debug(f'Формируем текст сообщения')
+    time_now = datetime.datetime.now(tz=pytz.timezone("Europe/Moscow")).strftime("%H:%M:%S")
+    msg_txt = f'💳 <b>Траты за текущий месяц по состоянию на {time_now}</b>\n\n'
+    msg_txt = ''.join([msg_txt, f'🔹 <b>Всего трат: {Decimal(spend_total).quantize(Decimal("0.01"))} руб.</b>\n'])
+    msg_txt = ''.join([msg_txt, f'🔹 <b>В среднем за день: '
+                                f'{Decimal(spend_average_per_day).quantize(Decimal("0.01"))} руб.</b>\n\n'])
+
+    for i_categ, i_amount in spend_stat.items():
+        msg_txt = ''.join([msg_txt, f'{i_categ}: {Decimal(i_amount).quantize(Decimal("0.01"))} руб.\n'])
+
+    MY_LOGGER.debug(f'Изменяем сообщение в телеге, вставляя в него текст трат')
+    await update.edit_message_text(
+        text=msg_txt,
+        reply_markup=MAKE_MONTH_FILE_KBRD,
+    )
+
+
+@Client.on_callback_query(filter_make_month_file)
+async def filter_make_month_file(client: pyrogram.Client, update: CallbackQuery):
+    """
+    Хэндлер для нажатия на кнопку по формированию файла-отчёта за месяц
+    """
+    MY_LOGGER.info(f'Хэндлер по формированию файла-отчёта за месяц')
+    await update.answer(f'Формирование файла-отчёта')
+    await update.edit_message_text(
+        text='⌛️ Пожалуйста, ожидайте.\n\n📝 Я сформирую файл с детальным отчётом и пришлю его Вам.',
+        reply_markup=BACK_TO_HEADPAGE_KBRD
+    )
+
+    MY_LOGGER.debug(f'Запускаем процесс записи файла')
+    spend_headers, spend_rows = MONTH_SPENDING_DATA.pop(update.from_user.id)
+    async with aiofiles.open(f'{update.from_user.id}_month_spending.csv', 'w', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        # await file.write(f"{spend_headers}\n")
+        # await writer.writerow(f"{spend_headers}\n")
+        await writer.writerow(spend_headers)
+        for i_row in spend_rows:
+            # await file.write(f"{i_row}\n")
+            await writer.writerow(i_row)
+
+    # Отправляем файл в телеграм
+    await update.message.reply_document(
+        document=f'{update.from_user.id}_month_spending.csv',
+        caption='📊 Детальная ифна по Вашим расходам за месяц в этом файле',
+    )
+
+    # Удаляем файл
+    if os.path.exists(f'{update.from_user.id}_month_spending.csv'):
+        os.remove(f'{update.from_user.id}_month_spending.csv')
+
+
+@Client.on_callback_query(filter_back_to_headpage)
+async def back_to_headpage_handler(client: pyrogram.Client, update: CallbackQuery):
+    """
+    Хэндлер для нажатия на кнопку по возврату к главному меню
+    """
+    MY_LOGGER.info(f'Хэндлер возврата к главному меню')
+    await update.answer(f'Возврат назад')
+
+    # Очищаем хранилища
+    MONTH_SPENDING_DATA.pop(update.from_user.id)
+
+    # Отправляем клавиатуру главного меню
+    await update.edit_message_text(
+        text=f'👇 Жми на кнопку ниже, чтобы <b>внести сумму трат</b>',
         reply_markup=HEADPAGE_RBRD,
     )
 

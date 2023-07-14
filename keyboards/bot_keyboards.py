@@ -19,4 +19,17 @@ HEADPAGE_RBRD = InlineKeyboardMarkup([
         BUTTONS_DCT['THIS_MONTH_SPENDING']
     ],
 ])
+MAKE_MONTH_FILE_KBRD = InlineKeyboardMarkup([
+    [
+        BUTTONS_DCT['MAKE_MONTH_FILE'],
+    ],
+    [
+        BUTTONS_DCT['BACK_TO_HEADPAGE'],
+    ],
+])
 
+BACK_TO_HEADPAGE_KBRD = InlineKeyboardMarkup([
+    [
+        BUTTONS_DCT['BACK_TO_HEADPAGE'],
+    ],
+])
