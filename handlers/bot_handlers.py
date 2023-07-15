@@ -131,7 +131,7 @@ async def this_month_spending(client: pyrogram.Client, update: CallbackQuery):
 
     MY_LOGGER.debug(f'Выполняем подсчёт трат и подготовку данных для записи в файл.')
     # file_headers = ','.join([i_key for i_key in resp_data[0].keys()])   # Заголовки файла
-    file_headers = [i_key for i_key in resp_data[0].keys()]   # Заголовки файла
+    file_headers = [i_key for i_key in resp_data[0].keys()]  # Заголовки файла
     file_rows = []
     spend_stat = dict()
     spend_total = 0
@@ -157,7 +157,7 @@ async def this_month_spending(client: pyrogram.Client, update: CallbackQuery):
         spend_total += float(i_spend.get("amount"))
     spend_average_per_day = spend_total / calendar.monthrange(datetime.datetime.now().year,
                                                               datetime.datetime.now().month)[1]
-    MONTH_SPENDING_DATA[update.from_user.id] = (file_headers, file_rows)    # Данные о тратах за месяц для файла
+    MONTH_SPENDING_DATA[update.from_user.id] = (file_headers, file_rows)  # Данные о тратах за месяц для файла
 
     MY_LOGGER.debug(f'Формируем текст сообщения')
     time_now = datetime.datetime.now(tz=pytz.timezone("Europe/Moscow")).strftime("%H:%M:%S")
@@ -219,7 +219,8 @@ async def back_to_headpage_handler(client: pyrogram.Client, update: CallbackQuer
     await update.answer(f'Возврат назад')
 
     # Очищаем хранилища
-    MONTH_SPENDING_DATA.pop(update.from_user.id)
+    if MONTH_SPENDING_DATA.get(update.from_user.id):
+        MONTH_SPENDING_DATA.pop(update.from_user.id)
 
     # Отправляем клавиатуру главного меню
     await update.edit_message_text(
