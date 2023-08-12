@@ -24,7 +24,7 @@ GET_MONTH_SPENDING_URL = f'{BASE_HOST_URL}myspending/get_month_spending/'
 BOT_DEBUG = os.environ.get('BOT_DEBUG', '0')
 
 if BOT_DEBUG == '1':
-    WRITE_SPENDING_LINK = 'https://1591925-cz63584.twc1.net/myspending/write_spending/'
+    WRITE_SPENDING_LINK = 'https://danyasevas11.fvds.ru/myspending/write_spending/'
 else:
     WRITE_SPENDING_LINK = f'{BASE_HOST_URL}myspending/write_spending/'
 
