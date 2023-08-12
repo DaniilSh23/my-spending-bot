@@ -10,6 +10,6 @@ COPY . /my_spending_bot/
 
 WORKDIR /my_spending_bot
 
-RUN ["python", "bot_authorization.py"]
+RUN python bot_authorization.py
 
 ENTRYPOINT ["python", "main.py"]
