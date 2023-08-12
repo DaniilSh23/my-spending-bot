@@ -8,7 +8,7 @@ MY_LOGGER = logger
 
 load_dotenv()
 
-TOKEN = os.environ.get('TOKEN', '5265303938:AAE1daGp-VJR0R15J9tHksR38hQlbCXMYdU')
+TOKEN = os.environ.get('TOKEN', 'bot_token')
 API_ID = os.environ.get('API_ID', '1234567890')
 API_HASH = os.environ.get('API_HASH', 'какой-то там хэш')
 ADMIN_LOGIN = os.environ.get('ADMIN_LOGIN', 'admin')
