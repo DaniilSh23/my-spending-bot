@@ -234,5 +234,5 @@ async def test_handler(client, update):
     """
     Получаем апдейты
     """
-    # MY_LOGGER.debug(f'Получен апдейт в тестовом хэндлере')
-    # MY_LOGGER.debug(update)
+    MY_LOGGER.debug(f'Получен апдейт в тестовом хэндлере')
+    MY_LOGGER.debug(update)
