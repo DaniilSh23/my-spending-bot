@@ -9,3 +9,10 @@ services:
     env_file: # Указываем явно путь к файлу с переменными окружения
       - .env
     restart: always
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    external:
+      name: mynetwork
