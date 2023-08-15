@@ -44,7 +44,8 @@ async def get_settings(setting_key: str) -> Tuple[int, dict]:
             if response.status == 200:
                 MY_LOGGER.success(f'Успешный POST запрос для получения настроек по ключу {setting_key!r}')
             else:
-                MY_LOGGER.warning(f'Неудачный POST запрос для получения настроек по ключу {setting_key!r}')
+                MY_LOGGER.warning(f'Неудачный POST запрос для получения настроек по ключу {setting_key!r} | '
+                                  f'Ответ: {response.text}')
             return response.status, await response.json()
 
 
