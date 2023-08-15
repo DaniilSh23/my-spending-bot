@@ -10,9 +10,8 @@ services:
       - .env
     restart: always
     networks:
-      - mynetwork
-
+      - default
 networks:
-  mynetwork:
+  default:
     external:
       name: mynetwork
