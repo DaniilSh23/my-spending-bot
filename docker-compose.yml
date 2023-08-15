@@ -13,5 +13,4 @@ services:
       - mynetwork
 networks:
   mynetwork:
-    external:
-      name: mynetwork
+    external: true
