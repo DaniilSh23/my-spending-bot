@@ -204,6 +204,7 @@ async def average_spending_per_category(client: pyrogram.Client, update: Callbac
     msg_txt = (f'💳 <b>Средние траты по категориям, по состоянию на {time_now}</b>\n'
                f'<i>Текущий месяц не учитывается!</i>\n\n')
     for data_dct in resp_data:
+        MY_LOGGER.debug(f"DATA DCT --- {data_dct}")
         msg_txt = ''.join([msg_txt, f'{data_dct["category"]}: {data_dct["amount"]} руб.\n'])
 
     # Изменяем текст сообщения
