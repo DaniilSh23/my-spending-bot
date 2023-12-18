@@ -20,6 +20,7 @@ START_BOT_URL = f'{BASE_HOST_URL}myspending/start_bot/'
 GET_SETTINGS_URL = f'{BASE_HOST_URL}myspending/get_settings/'
 GET_DAY_SPENDING_URL = f'{BASE_HOST_URL}myspending/get_day_spending/'
 GET_MONTH_SPENDING_URL = f'{BASE_HOST_URL}myspending/get_month_spending/'
+GET_AVERAGE_SPENDING_URL = f'{BASE_HOST_URL}myspending/average_amount_spent/'
 
 BOT_DEBUG = os.environ.get('BOT_DEBUG', '0')
 

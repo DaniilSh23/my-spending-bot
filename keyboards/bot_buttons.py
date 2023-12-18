@@ -23,6 +23,10 @@ BUTTONS_DCT = {
         text=f'📄 Отчёт в файл',
         callback_data='month_spending_to_file'
     ),
+    'AVERAGE_CATEGORY_SPENDING': InlineKeyboardButton(
+        text=f'📊 Средние траты по категориям',
+        callback_data='average_category_spending'
+    ),
     'BACK_TO_HEADPAGE': InlineKeyboardButton(
         text=f'🔙 Назад',
         callback_data='back_to_headpage'

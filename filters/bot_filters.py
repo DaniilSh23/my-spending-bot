@@ -39,8 +39,16 @@ async def func_filter_make_month_file(_, __, update: CallbackQuery):
     return update.data == 'month_spending_to_file'
 
 
+async def func_average_category_spending(_, __, update: CallbackQuery):
+    """
+    Функция фильтра для колбэка запроса средней суммы трат по категориям
+    """
+    return update.data == 'average_category_spending'
+
+
 bot_manager_filter = filters.create(func_bot_manager_filter)
 get_day_pending_filter = filters.create(func_get_day_pending)
 get_month_spending_filter = filters.create(func_get_month_spending_filter)
 filter_back_to_headpage = filters.create(func_filter_back_to_headpage)
 filter_make_month_file = filters.create(func_filter_make_month_file)
+filter_average_category_spending = filters.create(func_average_category_spending)

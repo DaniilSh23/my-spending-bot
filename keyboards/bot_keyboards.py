@@ -18,6 +18,9 @@ HEADPAGE_RBRD = InlineKeyboardMarkup([
     [
         BUTTONS_DCT['THIS_MONTH_SPENDING']
     ],
+    [
+        BUTTONS_DCT['AVERAGE_CATEGORY_SPENDING']
+    ],
 ])
 MAKE_MONTH_FILE_KBRD = InlineKeyboardMarkup([
     [

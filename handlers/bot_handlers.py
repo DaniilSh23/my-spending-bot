@@ -11,10 +11,11 @@ from pyrogram import Client, filters
 from pyrogram.types import Message, CallbackQuery
 
 from filters.bot_filters import get_day_pending_filter, get_month_spending_filter, filter_back_to_headpage, \
-    filter_make_month_file
+    filter_make_month_file, filter_average_category_spending
 from keyboards.bot_keyboards import ADMIN_KBRD, HEADPAGE_RBRD, MAKE_MONTH_FILE_KBRD, BACK_TO_HEADPAGE_KBRD
 from settings.config import MY_LOGGER, ADMIN_LOGIN, ADMIN_PASS, MONTH_SPENDING_DATA
-from utils.req_to_project_api import start_bot_post_request, get_settings, get_day_spending, get_month_spending
+from utils.req_to_project_api import start_bot_post_request, get_settings, get_day_spending, get_month_spending, \
+    get_average_spending
 
 
 @Client.on_message(filters.command('start'))
@@ -173,6 +174,39 @@ async def this_month_spending(client: pyrogram.Client, update: CallbackQuery):
     await update.edit_message_text(
         text=msg_txt,
         reply_markup=MAKE_MONTH_FILE_KBRD,
+    )
+
+
+@Client.on_callback_query(filter_average_category_spending)
+async def average_spending_per_category(client: pyrogram.Client, update: CallbackQuery):
+    """
+    Хэндлер для получения средней суммы трат в категории.
+    """
+    MY_LOGGER.info(f'для получения средней суммы трат в категории.')
+    await update.answer(f'получения средней суммы трат в категории.')
+
+    # Кидаем запрос к админке
+    resp_status, resp_data = await get_average_spending(tlg_id=str(update.from_user.id))
+    if resp_status != 200:
+        MY_LOGGER.debug(f'Статус-код ответа на запрос о получении расходов за месяц == {resp_status}')
+        await update.edit_message_text(
+            text=f'🚧 Неудачный запрос для получения трат за месяц.\n🛠 У бота что-то сломалось, надо чинить.',
+            reply_markup=HEADPAGE_RBRD,
+        )
+        return
+
+    # Подготавливаем сообщение со средними суммами трат по категории для отправки пользователю
+    MY_LOGGER.debug(f'Формируем текст сообщения')
+    time_now = datetime.datetime.now(tz=pytz.timezone("Europe/Moscow")).strftime("%H:%M:%S")
+    msg_txt = (f'💳 <b>Средние траты по категориям по состоянию на {time_now}</b>\n'
+               f'<i>Текущий месяц не учитывается</i>\n\n')
+    for i_amount, i_categ in resp_data.items():
+        msg_txt = ''.join([msg_txt, f'{i_categ}: {Decimal(i_amount).quantize(Decimal("0.01"))} руб.\n'])
+
+    # Изменяем текст сообщения
+    await update.edit_message_text(
+        text=msg_txt,
+        reply_markup=BACK_TO_HEADPAGE_KBRD,
     )
 
 
