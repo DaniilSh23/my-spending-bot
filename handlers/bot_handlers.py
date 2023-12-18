@@ -200,7 +200,7 @@ async def average_spending_per_category(client: pyrogram.Client, update: Callbac
     time_now = datetime.datetime.now(tz=pytz.timezone("Europe/Moscow")).strftime("%H:%M:%S")
     msg_txt = (f'💳 <b>Средние траты по категориям по состоянию на {time_now}</b>\n'
                f'<i>Текущий месяц не учитывается</i>\n\n')
-    for i_amount, i_categ in resp_data.items():
+    for i_amount, i_categ in resp_data:
         msg_txt = ''.join([msg_txt, f'{i_categ}: {Decimal(i_amount).quantize(Decimal("0.01"))} руб.\n'])
 
     # Изменяем текст сообщения
