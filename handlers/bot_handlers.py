@@ -156,8 +156,11 @@ async def this_month_spending(client: pyrogram.Client, update: CallbackQuery):
         else:
             spend_stat[i_spend.get("category")] = float(i_spend.get("amount"))
         spend_total += float(i_spend.get("amount"))
-    spend_average_per_day = spend_total / calendar.monthrange(datetime.datetime.now().year,
-                                                              datetime.datetime.now().month)[1]
+
+    # TODO: изменил тут логику расчета средней суммы трат за месяц. Раскоментить, если что-то пойдет не так.
+    # spend_average_per_day = spend_total / calendar.monthrange(datetime.datetime.now().year,
+    #                                                           datetime.datetime.now().month)[1]
+    spend_average_per_day = spend_total / datetime.datetime.now().day
     MONTH_SPENDING_DATA[update.from_user.id] = (file_headers, file_rows)  # Данные о тратах за месяц для файла
 
     MY_LOGGER.debug(f'Формируем текст сообщения')
@@ -196,12 +199,12 @@ async def average_spending_per_category(client: pyrogram.Client, update: Callbac
         return
 
     # Подготавливаем сообщение со средними суммами трат по категории для отправки пользователю
-    MY_LOGGER.debug(f'Формируем текст сообщения')
+    MY_LOGGER.debug(f'Формируем текст сообщения | {resp_data}')
     time_now = datetime.datetime.now(tz=pytz.timezone("Europe/Moscow")).strftime("%H:%M:%S")
-    msg_txt = (f'💳 <b>Средние траты по категориям по состоянию на {time_now}</b>\n'
-               f'<i>Текущий месяц не учитывается</i>\n\n')
+    msg_txt = (f'💳 <b>Средние траты по категориям, по состоянию на {time_now}</b>\n'
+               f'<i>Текущий месяц не учитывается!</i>\n\n')
     for i_amount, i_categ in resp_data:
-        msg_txt = ''.join([msg_txt, f'{i_categ}: {Decimal(i_amount).quantize(Decimal("0.01"))} руб.\n'])
+        msg_txt = ''.join([msg_txt, f'{i_categ}: {i_amount} руб.\n'])
 
     # Изменяем текст сообщения
     await update.edit_message_text(
