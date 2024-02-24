@@ -13,6 +13,7 @@ API_ID = os.environ.get('API_ID', '1234567890')
 API_HASH = os.environ.get('API_HASH', 'какой-то там хэш')
 ADMIN_LOGIN = os.environ.get('ADMIN_LOGIN', 'admin')
 ADMIN_PASS = os.environ.get('ADMIN_PASS', 'admin')
+WEB_APP_PAGES_URL = os.environ.get('WEB_APP_PAGES_URL')
 
 # Константы для API Django проекта
 BASE_HOST_URL = os.environ.get('BASE_HOST_URL', 'http://127.0.0.1:8000/')
@@ -21,13 +22,14 @@ GET_SETTINGS_URL = f'{BASE_HOST_URL}myspending/get_settings/'
 GET_DAY_SPENDING_URL = f'{BASE_HOST_URL}myspending/get_day_spending/'
 GET_MONTH_SPENDING_URL = f'{BASE_HOST_URL}myspending/get_month_spending/'
 GET_AVERAGE_SPENDING_URL = f'{BASE_HOST_URL}myspending/average_amount_spent/'
+WRITE_SPENDING_LINK = f"{WEB_APP_PAGES_URL}myspending/write_spending/"
 
 BOT_DEBUG = os.environ.get('BOT_DEBUG', '0')
 
-if BOT_DEBUG == '1':
-    WRITE_SPENDING_LINK = 'https://danyasevas11.fvds.ru/myspending/write_spending/'
-else:
-    WRITE_SPENDING_LINK = f'{BASE_HOST_URL}myspending/write_spending/'
+# if BOT_DEBUG == '1':
+#     WRITE_SPENDING_LINK = 'https://danyasevas11.fvds.ru/myspending/write_spending/'
+# else:
+#     WRITE_SPENDING_LINK = f'{BASE_HOST_URL}myspending/write_spending/'
 
 # Хранилища для всякого
 MONTH_SPENDING_DATA = dict()    # {tlg_id: data}
