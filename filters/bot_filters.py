@@ -18,6 +18,13 @@ async def func_get_day_pending(_, __, update: CallbackQuery):
     return update.data == 'get_day_spending'
 
 
+async def func_lst_month_spending_filter(_, __, update: CallbackQuery):
+    """
+    Функция фильтра для колбэка получения трат за прошлый месяц
+    """
+    return update.data == 'last_month_spending'
+
+
 async def func_get_month_spending_filter(_, __, update: CallbackQuery):
     """
     Функция фильтра для колбэка получения трат за месяц
@@ -49,6 +56,7 @@ async def func_average_category_spending(_, __, update: CallbackQuery):
 bot_manager_filter = filters.create(func_bot_manager_filter)
 get_day_pending_filter = filters.create(func_get_day_pending)
 get_month_spending_filter = filters.create(func_get_month_spending_filter)
+last_month_spending_filter = filters.create(func_lst_month_spending_filter)
 filter_back_to_headpage = filters.create(func_filter_back_to_headpage)
 filter_make_month_file = filters.create(func_filter_make_month_file)
 filter_average_category_spending = filters.create(func_average_category_spending)

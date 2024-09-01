@@ -64,14 +64,18 @@ async def get_day_spending(tlg_id: str) -> Tuple[int, dict]:
             return response.status, await response.json()
 
 
-async def get_month_spending(tlg_id: str) -> Tuple[int, dict]:
+async def get_month_spending(tlg_id: str, spend_month=None) -> Tuple[int, dict]:
     """
     GET запрос для получения трат за текущий месяц
+    :param spend_month: int - месяц по которому нужно получить траты
     :param tlg_id: TG ID юзера
     :return: (int, dict) - (статус код, данные)
     """
+    req_url = f'{GET_MONTH_SPENDING_URL}?tlg_id={tlg_id}'
+    if spend_month:
+        req_url = "".join([req_url, f"&spend_month={spend_month}"])
     async with aiohttp.ClientSession() as session:
-        async with session.get(url=f'{GET_MONTH_SPENDING_URL}?tlg_id={tlg_id}') as response:
+        async with session.get(url=req_url) as response:
             if response.status == 200:
                 MY_LOGGER.success(f'Успешный GET запрос для получения трат за месяц юзера {tlg_id!r}')
             else:

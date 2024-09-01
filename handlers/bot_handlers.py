@@ -3,6 +3,7 @@ import csv
 import datetime
 import os
 from _decimal import Decimal
+from calendar import month
 
 import aiofiles
 import pyrogram
@@ -11,7 +12,7 @@ from pyrogram import Client, filters
 from pyrogram.types import Message, CallbackQuery
 
 from filters.bot_filters import get_day_pending_filter, get_month_spending_filter, filter_back_to_headpage, \
-    filter_make_month_file, filter_average_category_spending
+    filter_make_month_file, filter_average_category_spending, last_month_spending_filter
 from keyboards.bot_keyboards import ADMIN_KBRD, HEADPAGE_RBRD, MAKE_MONTH_FILE_KBRD, BACK_TO_HEADPAGE_KBRD
 from settings.config import MY_LOGGER, ADMIN_LOGIN, ADMIN_PASS, MONTH_SPENDING_DATA
 from utils.req_to_project_api import start_bot_post_request, get_settings, get_day_spending, get_month_spending, \
@@ -112,6 +113,75 @@ async def get_day_spending_handler(client: pyrogram.Client, update: CallbackQuer
         reply_markup=HEADPAGE_RBRD,
     )
 
+# TODO: эта функция полностью дублирует функцию трат за текущий месяц. Надо это все отрефакторить и сделать одну
+#  функцию о тратах за месяц, и далее уже детализация за какой
+@Client.on_callback_query(last_month_spending_filter)
+async def last_month_spending(client: pyrogram.Client, update: CallbackQuery):
+    """
+    Хэндлер для нажатия на кнопку расходов за прошлый месяц
+    """
+    MY_LOGGER.debug(f'Апдейт в хэндлере получения расходов за прошлый месяц от пользователя {update.from_user.id}')
+    await update.answer(f'Расходы за прошлый месяц')
+
+    # Получаем прошлый месяц и кидаем с ним запрос на получение данных
+    prev_month = datetime.datetime.now().date().month - 1
+    if prev_month == 0:
+        prev_month = 12
+    resp_status, resp_data = await get_month_spending(tlg_id=str(update.from_user.id), spend_month=prev_month)
+
+    if resp_status != 200:
+        MY_LOGGER.debug(f'Статус-код ответа на запрос о получении расходов за месяц == {resp_status}')
+        await update.edit_message_text(
+            text=f'🚧 Неудачный запрос для получения трат за месяц.\n🛠 У бота что-то сломалось, надо чинить.',
+            reply_markup=HEADPAGE_RBRD,
+        )
+        return
+
+    MY_LOGGER.debug(f'Выполняем подсчёт трат и подготовку данных для записи в файл.')
+    file_headers = [i_key for i_key in resp_data[0].keys()]  # Заголовки файла
+    file_rows = []
+    spend_stat = dict()
+    spend_total = 0
+    for i_spend in resp_data:
+
+        # Собираем строку файла
+        i_row = []
+        for i_val in i_spend.values():
+            try:
+                dt = datetime.datetime.strptime(i_val, "%Y-%m-%dT%H:%M:%S.%f%z")
+                i_val = dt.strftime('%d.%m.%Y %H:%M')
+            except ValueError:
+                pass
+            i_row.append(i_val)
+        file_rows.append(i_row)
+
+        # Считаем суммы трат
+        categ_name = i_spend.get("category")
+        if spend_stat.get(categ_name):
+            spend_stat[i_spend.get("category")] += float(i_spend.get("amount"))
+        else:
+            spend_stat[i_spend.get("category")] = float(i_spend.get("amount"))
+        spend_total += float(i_spend.get("amount"))
+
+    spend_average_per_day = spend_total / datetime.datetime.now().day
+    MONTH_SPENDING_DATA[update.from_user.id] = (file_headers, file_rows)  # Данные о тратах за месяц для файла
+
+    MY_LOGGER.debug(f'Формируем текст сообщения')
+    time_now = datetime.datetime.now(tz=pytz.timezone("Europe/Moscow")).strftime("%H:%M:%S")
+    msg_txt = f'💳 <b>Траты за месяц {prev_month} по состоянию на {time_now}</b>\n\n'
+    msg_txt = ''.join([msg_txt, f'🔹 <b>Всего трат: {Decimal(spend_total).quantize(Decimal("0.01"))} руб.</b>\n'])
+    msg_txt = ''.join([msg_txt, f'🔹 <b>В среднем за день: '
+                                f'{Decimal(spend_average_per_day).quantize(Decimal("0.01"))} руб.</b>\n\n'])
+
+    for i_categ, i_amount in spend_stat.items():
+        msg_txt = ''.join([msg_txt, f'{i_categ}: {Decimal(i_amount).quantize(Decimal("0.01"))} руб.\n'])
+
+    MY_LOGGER.debug(f'Изменяем сообщение в телеге, вставляя в него текст трат')
+    await update.edit_message_text(
+        text=msg_txt,
+        reply_markup=MAKE_MONTH_FILE_KBRD,
+    )
+
 
 @Client.on_callback_query(get_month_spending_filter)
 async def this_month_spending(client: pyrogram.Client, update: CallbackQuery):
@@ -157,9 +227,6 @@ async def this_month_spending(client: pyrogram.Client, update: CallbackQuery):
             spend_stat[i_spend.get("category")] = float(i_spend.get("amount"))
         spend_total += float(i_spend.get("amount"))
 
-    # TODO: изменил тут логику расчета средней суммы трат за месяц. Раскоментить, если что-то пойдет не так.
-    # spend_average_per_day = spend_total / calendar.monthrange(datetime.datetime.now().year,
-    #                                                           datetime.datetime.now().month)[1]
     spend_average_per_day = spend_total / datetime.datetime.now().day
     MONTH_SPENDING_DATA[update.from_user.id] = (file_headers, file_rows)  # Данные о тратах за месяц для файла
 

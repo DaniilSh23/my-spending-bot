@@ -19,6 +19,10 @@ BUTTONS_DCT = {
         text=f'📅 Расходы за этот месяц',
         callback_data='this_month_spending'
     ),
+    'LAST_MONTH_SPENDING': InlineKeyboardButton(
+        text=f'📅 Расходы за прошлый месяц',
+        callback_data='last_month_spending'
+    ),
     'MAKE_MONTH_FILE': InlineKeyboardButton(
         text=f'📄 Отчёт в файл',
         callback_data='month_spending_to_file'
